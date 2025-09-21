@@ -5,6 +5,7 @@ interface ImagePreviewProps {
   imageFile: File | null;
   motionType: MotionType | null;
   isAnimating: boolean;
+  generatedVideoUrl?: string | null;
 }
 
 const getMotionAnimation = (type: MotionType) => {
@@ -12,41 +13,42 @@ const getMotionAnimation = (type: MotionType) => {
     case 'earthquake':
       return {
         y: [0, -8, 8, -6, 6, -4, 4, -2, 2, 0],
-        transition: { duration: 0.8, repeat: Infinity, ease: "easeInOut" }
+        transition: { duration: 0.8, repeat: Infinity }
       };
     case 'sidewinder':
       return {
         x: [0, -10, 10, -8, 8, -6, 6, -4, 4, 0],
-        transition: { duration: 1, repeat: Infinity, ease: "easeInOut" }
+        transition: { duration: 1, repeat: Infinity }
       };
     case 'drunk':
       return {
         rotate: [0, 5, -3, 8, -6, 4, -2, 1, 0],
         x: [0, 2, -1, 3, -2, 1, 0],
         y: [0, 1, -2, 1, -1, 0],
-        transition: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+        transition: { duration: 2, repeat: Infinity }
       };
     case 'mosquito':
       return {
         x: [0, 1, -1, 2, -2, 1, -1, 0],
         y: [0, -1, 1, -2, 2, -1, 1, 0],
-        transition: { duration: 0.1, repeat: Infinity, ease: "linear" }
+        transition: { duration: 0.1, repeat: Infinity }
       };
     case 'liquid':
       return {
         y: [0, -6, 0, 6, 0],
         scale: [1, 1.02, 1, 0.98, 1],
-        transition: { duration: 1.5, repeat: Infinity, ease: "easeInOut" }
+        transition: { duration: 1.5, repeat: Infinity }
       };
     default:
       return {};
   }
 };
 
-export function ImagePreview({ imageFile, motionType, isAnimating }: ImagePreviewProps) {
+export function ImagePreview({ imageFile, motionType, isAnimating, generatedVideoUrl }: ImagePreviewProps) {
   if (!imageFile) return null;
 
   const imageUrl = URL.createObjectURL(imageFile);
+  const showGeneratedVideo = generatedVideoUrl && !isAnimating;
 
   return (
     <motion.div
@@ -69,7 +71,7 @@ export function ImagePreview({ imageFile, motionType, isAnimating }: ImagePrevie
         }}
         transition={{ duration: 0.8, repeat: Infinity }}
       >
-        {isAnimating ? "🎉 GETTING FUNKY! 🎉" : "PREVIEW"}
+        {isAnimating ? "🎉 GETTING FUNKY! 🎉" : showGeneratedVideo ? "🎬 FUNKY VIDEO READY! 🎬" : "PREVIEW"}
       </motion.h3>
       
       <motion.div
@@ -85,19 +87,29 @@ export function ImagePreview({ imageFile, motionType, isAnimating }: ImagePrevie
         }}
         transition={{ duration: 2, repeat: Infinity }}
       >
-        <motion.img
-          src={imageUrl}
-          alt="Uploaded image"
-          className="w-full h-auto max-h-96 object-contain"
-          animate={
-            isAnimating && motionType
-              ? getMotionAnimation(motionType)
-              : {
-                  scale: [1, 1.005, 1],
-                  transition: { duration: 3, repeat: Infinity }
-                }
-          }
-        />
+        {showGeneratedVideo ? (
+          <video
+            src={generatedVideoUrl}
+            autoPlay
+            loop
+            muted
+            className="w-full h-auto max-h-96 object-contain"
+          />
+        ) : (
+          <motion.img
+            src={imageUrl}
+            alt="Uploaded image"
+            className="w-full h-auto max-h-96 object-contain"
+            animate={
+              isAnimating && motionType
+                ? getMotionAnimation(motionType)
+                : {
+                    scale: [1, 1.005, 1],
+                    transition: { duration: 3, repeat: Infinity }
+                  }
+            }
+          />
+        )}
         
         {isAnimating && (
           <>
